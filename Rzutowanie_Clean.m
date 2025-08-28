@@ -1,13 +1,13 @@
 clc; clear;
 
 %% === 1. Konfiguracja ===
-csv_file = 'OptitrackAgataPassiveWAggressive3.csv';
-video_file = 'Agata_nagranie_z_pointem_na_kamerze3.mp4';
-video_fps = 30;
+csv_file = 'Nazwa_pliku.csv';
+video_file = 'Nazwa_Pliku.mp4';
+video_fps = 25;
 optitrack_fps = 120;
 frame_ratio = optitrack_fps / video_fps;
 start_video_frame = 1;
-total_output_frames = 300;
+total_output_frames = 1000;
 
 video = VideoReader(video_file);
 
@@ -29,10 +29,10 @@ MV = eye(4);
 MV(1:3,1:3) = R;
 MV(1:3,4) = t;
 
-fovY = deg2rad(82);
-aspect = 16 / 9;
-zN = 2.07;
-zF = 4.10;
+fovY = deg2rad(90);
+aspect = 4 / 3;
+zN = 2.7;
+zF = 3.29;
 
 tang = tan(fovY / 2);
 S_y = 1 / tang;
@@ -80,9 +80,9 @@ p2D = cell(1,19);
 
 for i = 1:19
     % Domyślne wartości
-    scale = 2.1;
+    scale = 1;
     theta = 0; % w stopniach
-    translation = [-1.5, -0.7, 0];
+    translation = [0, 0, 0];
  
 %     % Przypisz indywidualne wartości dla każdego punktu
 %     if i == 1
@@ -260,4 +260,5 @@ pt2D(2) = (1 - (pt2D(2) + 1) / 2) * img_height;  % flip Y
     title(sprintf('Klatka: %d (CSV %d)', vf, frame_idx));
     pause(1/video_fps);
     hold off;
+
 end
