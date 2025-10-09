@@ -4,8 +4,8 @@ import cv2
 import math
 
 # === Konfiguracja ===
-csv_file = 'Radzio8_Casual.csv'
-video_file = 'Take8_Calibrated10.mp4'
+csv_file = 'Take 2025-05-13 02.53.csv'
+video_file = '20250513_144441_scaled.avi'
 video_fps = 25
 optitrack_fps = 120
 frame_ratio = optitrack_fps / video_fps
@@ -53,7 +53,8 @@ MP[2,3] = 2.0 * zF * zN / (zF - zN)
 MP[3,2] = -1.0
 
 # === 3. Wczytaj dane z CSV ===
-raw = pd.read_csv(csv_file, header=None).values  # odpowiada readmatrix
+raw = pd.read_csv(csv_file, sep=',', skiprows=11).values
+
 raw = raw.astype(float)
 raw[np.isinf(raw)] = np.nan
 raw[raw == 0] = np.nan

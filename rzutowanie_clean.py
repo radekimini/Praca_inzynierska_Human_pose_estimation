@@ -54,7 +54,8 @@ MP[2,3] = -2.0 * zF * zN / (zF - zN)
 MP[3,2] = -1.0
 
 # === 3. Wczytaj dane z CSV ===
-raw = pd.read_csv(csv_file, header=None).values.astype(float)
+raw = pd.read_csv(csv_file, sep=',', skiprows=11).values.astype(float)
+
 raw[np.isinf(raw)] = np.nan
 raw[raw == 0] = np.nan
 

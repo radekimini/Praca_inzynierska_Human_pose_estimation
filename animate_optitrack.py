@@ -5,10 +5,11 @@ from mpl_toolkits.mplot3d import Axes3D
 import math
 
 # === Konfiguracja / Wczytanie ===
-filename = 'OptitrackAgataPassiveWAggressive3.csv'
+filename = 'OptitrackAgataPassiveWAggressive.csv'
 frameRate = 100
 
-raw = pd.read_csv(filename, header=None).values.astype(float)
+raw = pd.read_csv(filename, sep=',', skiprows=11).values.astype(float)
+
 raw[np.isinf(raw)] = np.nan
 raw[raw == 0] = np.nan
 
