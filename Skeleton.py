@@ -1,28 +1,10 @@
 import math
 from numpy import array, dot, linalg, clip
-from enum import Enum
-from shared import setup_logger
+from shared import setup_logger, Joint
 
 logger = setup_logger(__name__)
 
 
-class Joint(Enum):
-    R_FOOT = 0
-    R_KNEE = 1
-    R_HIP = 2
-    L_HIP = 3
-    L_KNEE = 4
-    L_FOOT = 5
-    C_HIP = 6
-    C_SHOULDER = 7
-    NECK = 8
-    HEAD = 9
-    R_HAND = 10
-    R_ELBOW = 11
-    R_SHOULDER = 12
-    L_SHOULDER = 13
-    L_ELBOW = 14
-    L_HAND = 15
 
 
 class Skeleton:
@@ -98,7 +80,7 @@ class Skeleton:
                     self.skel_vec = array([array(point) for point in data])
                     del data
                     print("\nreceived queue data\n")
-                    # self.print_skeleton_points()
+                    self.print_skeleton_points()
                 except Exception as e:
                     logger.error(f"Error receiving queue data: {e}")
 
@@ -113,7 +95,7 @@ class Skeleton:
                     self.skel_angles["R_ARM"] = self.calculate_angle_between_segments(Joint.C_HIP, Joint.C_SHOULDER,
                                                                                       Joint.R_SHOULDER, Joint.R_HAND)
 
-                    # self.print_skeleton_angles()
+                    self.print_skeleton_angles()
 
                 except Exception as e:
                     logger.error(f"Error in calculation of angles : {e}")
