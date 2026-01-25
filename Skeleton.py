@@ -51,82 +51,84 @@ class Skeleton:
 
     def move_robot(self):
         """
-        Sterowanie robotem na podstawie aktualnych kątów szkieletu.
+            ustala oś ruchu oraz prędkość poruszania robota, wysyła polecenie do procesu robota
         """
         try:
             self.ruszaj = False
 
-            # zainicjuj sterowanie
             if self.skel_angles["LEGS"] <= 15.0:
                 return
 
             legs_angle = min(self.skel_angles["LEGS"], 30.0)
-            self.delta = (legs_angle / 600.0) - (1.0 / 40.0)
+            self.delta = (legs_angle / 750.0) - (1.0 / 50.0)
 
-            # Góra
+            #  GÓRA
             if (
-                    self.skel_angles["L_ARM"] > 165.0 and
+                    self.skel_angles["L_ARM"] < 45.0 and
                     165.0 < self.skel_angles["L_ELBOW"] < 190.0 and
-                    self.skel_angles["R_ARM"] < 45.0 and
+                    self.skel_angles["R_ARM"] > 165.0 and
                     165.0 < self.skel_angles["R_ELBOW"] < 190.0
             ):
                 self.axis = 11
                 self.ruszaj = True
                 print("ruszanie gora")
 
-            # Dół
+            #  DÓŁ
             elif (
-                    self.skel_angles["R_ARM"] > 165.0 and
+                    self.skel_angles["R_ARM"] < 45.0 and
                     165.0 < self.skel_angles["R_ELBOW"] < 190.0 and
-                    self.skel_angles["L_ARM"] < 45.0 and
+                    self.skel_angles["L_ARM"] > 165.0 and
                     165.0 < self.skel_angles["L_ELBOW"] < 190.0
             ):
                 self.axis = 11
                 self.delta *= -1.0
                 self.ruszaj = True
-                print("⬇️ ruszanie dol")
+                print("ruszanie dol")
 
-            # Przód
+            #  TYŁ
             elif (
-                    self.skel_angles["R_ARM"] > 165.0 and
+                    self.skel_angles["L_ARM"] < 45.0 and
+                    165.0 < self.skel_angles["L_ELBOW"] < 190.0 and
+                    80.0 < self.skel_angles["R_ARM"] < 110.0 and
+                    165.0 < self.skel_angles["R_ELBOW"] < 190.0
+            ):
+                self.axis = 3
+                self.ruszaj = True
+                print("ruszanie tyl")
+
+            #  PRZÓD
+            elif (
+                    self.skel_angles["R_ARM"] < 45.0 and
                     165.0 < self.skel_angles["R_ELBOW"] < 190.0 and
-                    80.0 < self.skel_angles["L_ARM"] < 110.0
+                    80.0 < self.skel_angles["L_ARM"] < 110.0 and
+                    165.0 < self.skel_angles["L_ELBOW"] < 190.0
             ):
                 self.axis = 3
                 self.delta *= -1.0
                 self.ruszaj = True
-                print("⬅️ ruszanie przod")
+                print("ruszanie przod")
 
-            # Tył
+            #  LEWO 
             elif (
-                    self.skel_angles["L_ARM"] > 165.0 and
-                    165.0 < self.skel_angles["L_ELBOW"] < 190.0 and
-                    80.0 < self.skel_angles["R_ARM"] < 110.0
-            ):
-                self.axis = 3
-                self.ruszaj = True
-                print("➡️ ruszanie tyl")
-
-            # lewo
-            elif (
-                    self.skel_angles["L_ARM"] > 165.0 and
-                    80.0 < self.skel_angles["R_ELBOW"] < 110.0
-            ):
-                self.axis = 7
-                self.ruszaj = True
-                print("⬅️ ruszanie lewo")
-
-            # prawo
-            elif (
-                    self.skel_angles["R_ARM"] > 165.0 and
+                    self.skel_angles["R_ARM"] < 45.0 and
+                    80.0 < self.skel_angles["L_ARM"] < 110.0 and
                     80.0 < self.skel_angles["L_ELBOW"] < 110.0
             ):
                 self.axis = 7
                 self.delta *= -1.0
                 self.ruszaj = True
-                print("➡️ ruszanie prawo")
+                print("ruszanie lewo")
 
-            # wyslij komedne
+            #  PRAWO
+            elif (
+                    self.skel_angles["L_ARM"] < 45.0 and
+                    80.0 < self.skel_angles["R_ARM"] < 110.0 and
+                    80.0 < self.skel_angles["R_ELBOW"] < 110.0
+            ):
+                self.axis = 7
+                self.ruszaj = True
+                print("ruszanie prawo")
+
             if self.ruszaj:
                 self.send()
                 self.wait_for_response()
@@ -138,7 +140,7 @@ class Skeleton:
 
     def print_skeleton_points(self):
         """
-        Prints cords of all nodes
+        wyświetla koordynaty wszytskich punktów charakterystycznych
         """
         output = ""
         for index, vect in enumerate(self.skel_vec):
@@ -147,7 +149,7 @@ class Skeleton:
 
     def print_skeleton_angles(self):
         """
-        Prints cords of all nodes
+        wyświetla wartosci wszytskich kątów
         """
         output = ""
         for key, angle in self.skel_angles.items():
@@ -180,40 +182,33 @@ class Skeleton:
 
         return angle_deg
 
-    def update_skeleton(self, queue_joints, queue_angles):
+    def update_skeleton(self, queue_frames, queue_angles):
         """
-        Przetwarza punkty szkieletu,
-        liczy kąty i wysyła komendy ruchu.
+        główny proces
+        oblicza kąty i wysyła koleja dalej, uruchamia proces obliczania sterowania
         """
         while True:
             try:
-                data = queue_joints.get()
-                while not queue_joints.empty():
-                    data = queue_joints.get()
+                packet = queue_frames.get()
 
-                self.skel_vec = array([array(point) for point in data])
+                self.skel_vec = packet["points"]
 
-                # liczenie kątów
                 self.skel_angles["L_ELBOW"] = self.calculate_angle_between_segments(
                     Joint.L_HAND, Joint.L_ELBOW,
                     Joint.L_ELBOW, Joint.L_SHOULDER
                 )
-
                 self.skel_angles["R_ELBOW"] = self.calculate_angle_between_segments(
                     Joint.R_HAND, Joint.R_ELBOW,
                     Joint.R_ELBOW, Joint.R_SHOULDER
                 )
-
                 self.skel_angles["L_ARM"] = self.calculate_angle_between_segments(
                     Joint.L_HIP, Joint.L_SHOULDER,
                     Joint.L_SHOULDER, Joint.L_ELBOW
                 )
-
                 self.skel_angles["R_ARM"] = self.calculate_angle_between_segments(
                     Joint.R_HIP, Joint.R_SHOULDER,
                     Joint.R_SHOULDER, Joint.R_ELBOW
                 )
-
                 self.skel_angles["LEGS"] = self.calculate_angle_between_segments(
                     Joint.R_FOOT, Joint.R_HIP,
                     Joint.L_HIP, Joint.L_FOOT
@@ -226,12 +221,12 @@ class Skeleton:
                 self.move_robot()
 
             except Exception as e:
-                logger.error(f"Skeleton update error: {e}")
+                logger.error(f"Skeleton error: {e}")
 
-    def run(self, queue_joints, queue_angles):
+    def run(self, queue_frames,queue_angles):
         logger.info("starting skeleton")
         try:
             self.setup_io()
-            self.update_skeleton(queue_joints, queue_angles)
+            self.update_skeleton(queue_frames,queue_angles)
         except Exception as e:
             logger.error(f"Error starting update skeleton: {e}")

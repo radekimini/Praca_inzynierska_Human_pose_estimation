@@ -42,7 +42,7 @@ class Visualizer_worker:
 
     def segment_angle_deg(self, center_pt, tip_pt):
         """
-        Kąt wektora center -> tip w stopniach (układ matematyczny).
+        Kąt wektora center -> tip w stopniach
         """
         if center_pt is None or tip_pt is None:
             return None
@@ -149,19 +149,19 @@ class Visualizer_worker:
         cv2.imshow("Skeleton Visualization", frame)
         cv2.waitKey(1)
 
-    def run(self, queue_visual, queue_angles):
+    def run(self, queue_frames, queue_angles):
         logger.info("Visualizer started")
         angles = {}
-
         while True:
             try:
-                frame, points = queue_visual.get()
+                packet = queue_frames.get()
 
                 while not queue_angles.empty():
                     angles = queue_angles.get()
 
-                self.draw(frame, points, angles)
+                self.draw(packet["frame"], packet["points"], angles)
 
             except Exception as e:
                 logger.error(f"Visualizer error: {e}")
+
 
