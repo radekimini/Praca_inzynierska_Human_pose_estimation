@@ -14,7 +14,7 @@ if __name__ == '__main__':
     logger.info("FakeDataSenderRun: starting simulation with video and projected points")
     time.sleep(1)
 
-    pogram_robot= subprocess.Popen("odpal_najpierw_ruszanie_robotem.exe")
+    pogram_robot= subprocess.Popen("Robot_move_commander.exe")
     time.sleep(10)
 
     path="calculated_points/projected_points.json"
