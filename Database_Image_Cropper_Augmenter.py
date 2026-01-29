@@ -5,6 +5,7 @@ import numpy as np
 import cv2
 import math
 import time
+import random
 
 image_dir = r'G:\Programowanie\DeepLearning\Plank\mpii_human_pose_v1\images'
 csv_path = 'body_positions_complete_single_person.csv'
@@ -12,7 +13,7 @@ augmented_csv_path = 'augmented_new_keypoints_128.csv'
 augmented_image_dir = 'augmented_new_cropped_images_128'
 output_size = 128
 buffer = 50
-rotation_angles = [-30, -20, -10, 10, 20, 30]
+rotation_angles = [-30, 30]
 sample_size = None
 
 try:
@@ -143,12 +144,13 @@ for image_name, group in grouped:
     keypoints = group.sort_values('joint_id')[['x', 'y']].to_numpy()
 
     variants = [(image_name.replace('.jpg', '_orig.jpg'), image, keypoints)]
+    
+    angle = random.uniform(rotation_angles[0], rotation_angles[1])
 
-    for angle in rotation_angles:
-        rotated_img, rotated_kp = rotate_image_and_keypoints(image, keypoints, angle)
-        variants.append(
-            (image_name.replace('.jpg', f'_rot{angle}.jpg'), rotated_img, rotated_kp)
-        )
+    rotated_img, rotated_kp = rotate_image_and_keypoints(image, keypoints, angle)
+    variants.append(
+        (image_name.replace('.jpg', f'_rot{angle:.2f}.jpg'), rotated_img, rotated_kp)
+    )
 
     aug_variants = []
     for name, img_var, kp_var in variants:
@@ -184,3 +186,4 @@ for image_name, group in grouped:
 total_time = time.time() - start_time
 print(f"Saved augmented keypoints to {augmented_csv_path}")
 print(f"Total time: {total_time:.1f} seconds")
+
