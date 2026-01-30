@@ -137,7 +137,7 @@ bool moveAxis(FastResearchInterface& fri, int axisIndex, float delta, SOCKET cli
     //  WYŚLIJ "FINISHED" 
     int finished = 2;
     send(client, (char*)&finished, sizeof(int), 0);
-    csv_cmd << now() << ",REJECTED," << axisIndex << "," << delta << "\n";
+    csv_cmd << now() << ",FINISHED," << axisIndex << "," << delta << "\n";
     csv_cmd.flush();
 
     robotState = RobotState::IDLE;
